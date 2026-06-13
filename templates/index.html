@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Downloader</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --background: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--background);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            text-align: center;
+            margin-top: 0;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .form-group legend {
+            font-weight: 600;
+            padding: 0 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .radio-option input {
+            margin-right: 10px;
+        }
+
+        .input-box {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            margin-top: 0.5rem;
+        }
+
+        button.btn-download {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.85rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        footer {
+            background-color: #ffffff;
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-content">
+    <div class="container">
+        <h1>UEK Schedule Exporter</h1>
+
+        <form action="/api/get-schedule" method="GET">
+            
+            <fieldset class="form-group">
+                <legend>I want to get the schedule for a:</legend>
+                <div class="radio-option">
+                    <input type="radio" id="studentOpt" name="role" value="student" checked>
+                    <label for="studentOpt">Student Group</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" id="lecturerOpt" name="role" value="lecturer">
+                    <label for="lecturerOpt">Lecturer</label>
+                </div>
+            </fieldset>
+
+            <fieldset class="form-group">
+                <legend>Enter Group Code OR Lecturer Name:</legend>
+                <input type="text" id="visible-query" class="input-box" list="diclist" placeholder="e.g., KrAIs-1011 or Prof. Smith" required>
+                
+                <input type="hidden" name="query" id="hidden-query">
+                
+                <datalist id="diclist">
+                    {% for item in dictionary %}
+                        <option value="{{ item.name }}"></option>
+                    {% endfor %}
+                </datalist>
+
+                <script>
+                // 4. Inject the Flask dictionary array safely as a native JavaScript variable
+                const globalDictionaryData = {{ dictionary | tojson | safe }};
+                
+                const visibleInput = document.getElementById('visible-query');
+                const hiddenInput = document.getElementById('hidden-query');
+
+                // 5. Instantly swap out the text value for the real link ID upon option selection
+                visibleInput.addEventListener('input', function() {
+                    const match = globalDictionaryData.find(item => item.name === this.value);
+                    if (match) {
+                        hiddenInput.value = match.link; 
+                    } else {
+                        hiddenInput.value = this.value; 
+                    }
+                });
+                </script>
+            </fieldset>
+
+            <fieldset class="form-group">
+                <legend>File Format:</legend>
+                <div class="radio-option">
+                    <input type="radio" id="icsFormat" name="format" value="ics" checked>
+                    <label for="icsFormat">iCalendar (.ics)</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" id="csvFormat" name="format" value="csv">
+                    <label for="csvFormat">Excel (.csv)</label>
+                </div>
+            </fieldset>
+
+            <button type="submit" class="btn-download">Download Schedule</button>
+        </form>
+    </div>
+</div>
+
+<footer>
+    Developed by Anastasiia Zaluzhna &copy; 2026
+</footer>
+
+</body>
+</html>
